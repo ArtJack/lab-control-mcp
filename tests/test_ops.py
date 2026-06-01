@@ -44,6 +44,20 @@ def test_empty_command_blocked():
     assert not ok
 
 
+def test_escape_hatches_stay_blocked():
+    # Commands that start plausibly must still not become shell escapes.
+    for bad in [
+        "wsl -d Ubuntu-24.04 rm -rf /",
+        "docker exec api sh",
+        "docker run alpine rm -rf /",
+        "ssh other rm -rf /",
+        "uv run python -c print(1)",   # 'uv run' is intentionally not in the defaults
+        "python -c print(1)",          # only 'python --version' is allowed
+    ]:
+        ok, _ = ops.validate_command(bad, cfg.allowed_commands)
+        assert not ok, f"escape not blocked: {bad!r}"
+
+
 def test_run_command_rejects_without_executing(monkeypatch):
     calls = {"local": 0, "remote": 0}
     monkeypatch.setattr(ops, "run_local", lambda *a, **k: calls.__setitem__("local", calls["local"] + 1) or {})

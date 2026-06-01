@@ -25,9 +25,13 @@ DEFAULT_ALLOWED_COMMANDS = [
     "systemctl status", "systemctl is-active", "journalctl",
     "curl -s", "ping -c", "ip", "ifconfig", "ss", "netstat",
     "git status", "git log", "git pull", "git fetch", "git branch", "git rev-parse",
-    "uv run", "python --version", "python3 --version", "pip list",
+    "python --version", "python3 --version", "pip list",
     "wsl --status", "wsl -l",
 ]
+# NOTE: interpreters / exec-wrappers are deliberately NOT in the defaults
+# ("uv run", bare "python"/"python3 -c", "ssh", "bash"/"sh", "docker exec"/"docker run",
+# "wsl -d/-e ...") — each would let a caller smuggle arbitrary code past the gate.
+# Keep them out; extend with care via LABCTL_ALLOWED_COMMANDS for safe, specific ops.
 
 
 class Config:
