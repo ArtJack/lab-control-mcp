@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "lab-control": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/artjack/Projects/AI/projects/lab-control-mcp",
+        "labctl-mcp"
+      ]
+    }
+  }
+}
