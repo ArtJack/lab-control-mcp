@@ -19,7 +19,7 @@ Try: *"lab_status"*, *"list_models"*, *"run nvidia-smi -L on alienware"*,
 
 - **SSH (stdio):** `ssh` into the mini over Tailscale and run the two lines above.
 - **HTTP:** run the 24/7 service (below) and point a native MCP client at
-  `http://100.81.78.74:8849/mcp` with `Authorization: Bearer <LABCTL_MCP_TOKEN>`.
+  `http://YOUR_TAILSCALE_IP:8849/mcp` with `Authorization: Bearer <LABCTL_MCP_TOKEN>`.
 
 ## 3. Claude Desktop — stdio
 

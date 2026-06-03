@@ -61,7 +61,7 @@ def ollama_models(base_url: str) -> list[str]:
 
 def lab_status() -> dict:
     """Health of every lab service, mirroring `ailab status`."""
-    gtx_host = urlparse(cfg.ollama_gtx).hostname or "192.168.1.159"
+    gtx_host = urlparse(cfg.ollama_gtx).hostname or "127.0.0.1"
     return {
         "checked_at": _now(),
         "gateway": {
