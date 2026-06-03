@@ -36,14 +36,14 @@ DEFAULT_ALLOWED_COMMANDS = [
 
 class Config:
     def __init__(self) -> None:
-        self.gateway_url = os.getenv("LITELLM_BASE_URL", "http://192.168.1.159:4000")
-        self.gateway_url_ts = os.getenv("LITELLM_BASE_URL_TS", "http://100.66.124.80:4000")
+        self.gateway_url = os.getenv("LITELLM_BASE_URL", "http://127.0.0.1:4000")
+        self.gateway_url_ts = os.getenv("LITELLM_BASE_URL_TS", "http://127.0.0.1:4000")
         self.master_key = os.getenv("LITELLM_MASTER_KEY") or None
 
         self.ollama_m4 = os.getenv("OLLAMA_M4", "http://127.0.0.1:11434")
-        self.ollama_gtx = os.getenv("OLLAMA_GTX", "http://192.168.1.159:11434")
+        self.ollama_gtx = os.getenv("OLLAMA_GTX", "http://127.0.0.1:11434")
 
-        self.qdrant_url = os.getenv("QDRANT_URL", "http://192.168.1.159:6333")
+        self.qdrant_url = os.getenv("QDRANT_URL", "http://127.0.0.1:6333")
         self.qdrant_api_key = os.getenv("QDRANT_API_KEY") or None
 
         self.alienware_ssh = os.getenv("LABCTL_ALIENWARE_SSH", "alienware")
