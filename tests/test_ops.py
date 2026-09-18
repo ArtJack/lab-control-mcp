@@ -98,3 +98,27 @@ def test_extra_allowlist_via_env(monkeypatch):
     assert ok
     # restore the module-level singleton for other tests
     reload(config_mod)
+
+
+def test_m4_is_skipped_when_retired(monkeypatch):
+    monkeypatch.setattr(cfg, "ollama_m4", None)
+    monkeypatch.setattr(ops, "_http_ok", lambda url: True)
+    monkeypatch.setattr(ops, "ollama_models", lambda base_url: ["qwen3:8b"])
+    assert "m4" not in ops.lab_status()["ollama"]
+    assert ops.list_models() == {"gtx": ["qwen3:8b"]}
+    assert ops.pull_model("m4", "llama3.1:8b")["ok"] is False
+
+
+def test_postgres_probe_over_loopback_is_not_evidence(monkeypatch):
+    # Postgres is meant to answer on loopback; probing it there proves nothing.
+    monkeypatch.setattr(cfg, "lan_host", "127.0.0.1")
+    monkeypatch.setattr(ops, "_port_open", lambda host, port: True)
+    assert ops.postgres_exposed_on_lan() is None
+
+
+def test_postgres_probe_uses_the_lan_address(monkeypatch):
+    probed = []
+    monkeypatch.setattr(cfg, "lan_host", "192.0.2.10")
+    monkeypatch.setattr(ops, "_port_open", lambda host, port: probed.append((host, port)) or False)
+    assert ops.postgres_exposed_on_lan() is False
+    assert probed == [("192.0.2.10", 5432)]

@@ -12,11 +12,11 @@ Safety model for ``run_command``:
 """
 from __future__ import annotations
 
+import ipaddress
 import shlex
 import socket
 import subprocess
 from datetime import UTC, datetime
-from urllib.parse import urlparse
 
 import httpx
 
@@ -50,6 +50,26 @@ def _port_open(host: str, port: int) -> bool:
         return False
 
 
+def _is_loopback(host: str) -> bool:
+    try:
+        return ipaddress.ip_address(socket.gethostbyname(host)).is_loopback
+    except (OSError, ValueError):
+        return False
+
+
+def postgres_exposed_on_lan() -> bool | None:
+    """True if Postgres answers on the lab box's LAN address; None if unknowable.
+
+    Postgres is meant to answer on loopback, so a loopback probe proves nothing and
+    returns None instead of a false alarm. Set LABCTL_LAN_HOST when this server runs
+    on the lab box itself.
+    """
+    host = cfg.lan_host or "127.0.0.1"
+    if _is_loopback(host):
+        return None
+    return _port_open(host, 5432)
+
+
 def ollama_models(base_url: str) -> list[str]:
     try:
         r = httpx.get(f"{base_url}/api/tags", timeout=cfg.http_timeout)
@@ -61,25 +81,27 @@ def ollama_models(base_url: str) -> list[str]:
 
 def lab_status() -> dict:
     """Health of every lab service, mirroring `ailab status`."""
-    gtx_host = urlparse(cfg.ollama_gtx).hostname or "127.0.0.1"
+    ollama = {"gtx": _http_ok(f"{cfg.ollama_gtx}/api/tags")}
+    if cfg.ollama_m4:
+        ollama["m4"] = _http_ok(f"{cfg.ollama_m4}/api/tags")
     return {
         "checked_at": _now(),
         "gateway": {
             "lan": _http_ok(f"{cfg.gateway_url}/health/liveliness"),
             "tailscale": _http_ok(f"{cfg.gateway_url_ts}/health/liveliness"),
         },
-        "ollama": {
-            "m4": _http_ok(f"{cfg.ollama_m4}/api/tags"),
-            "gtx": _http_ok(f"{cfg.ollama_gtx}/api/tags"),
-        },
+        "ollama": ollama,
         "qdrant": _http_ok(f"{cfg.qdrant_url}/"),
-        # On LAN, reachable Postgres means the lockdown is NOT deployed (a warning).
-        "postgres_exposed_on_lan": _port_open(gtx_host, 5432),
+        # Reachable on the LAN address means the lockdown is NOT deployed (a warning).
+        "postgres_exposed_on_lan": postgres_exposed_on_lan(),
     }
 
 
 def list_models() -> dict:
-    return {"m4": ollama_models(cfg.ollama_m4), "gtx": ollama_models(cfg.ollama_gtx)}
+    models = {"gtx": ollama_models(cfg.ollama_gtx)}
+    if cfg.ollama_m4:
+        models["m4"] = ollama_models(cfg.ollama_m4)
+    return models
 
 
 def gateway_generate(prompt: str, model: str = "chat", max_tokens: int = 512) -> dict:
@@ -165,6 +187,8 @@ def pull_model(host: str, name: str, timeout: int = 600) -> dict:
     """Pull an Ollama model on 'm4' (local) or 'gtx' (Alienware)."""
     if host not in ("m4", "gtx"):
         return {"ok": False, "error": "host must be 'm4' or 'gtx'"}
+    if host == "m4" and not cfg.ollama_m4:
+        return {"ok": False, "error": "the Mac mini's Ollama is retired (OLLAMA_M4 is unset)"}
     if not _valid_model_name(name):
         return {"ok": False, "error": "invalid model name"}
     command = f"ollama pull {name}"
