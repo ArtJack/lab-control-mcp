@@ -65,8 +65,10 @@ git-ignored `.env`.
 
 ## Config
 
-See `.env.example`. Key vars: `LITELLM_BASE_URL(_TS)`, `LITELLM_MASTER_KEY`, `OLLAMA_M4`,
-`OLLAMA_GTX`, `QDRANT_URL`/`QDRANT_API_KEY`, `LABCTL_ALIENWARE_SSH` (ssh alias),
+See `.env.example`. Key vars: `LITELLM_BASE_URL(_TS)`, `LITELLM_MASTER_KEY`, `OLLAMA_M4`
+(optional — unset skips every M4 check), `OLLAMA_GTX`, `LABCTL_LAN_HOST` (the lab box's
+LAN address for the Postgres exposure probe), `QDRANT_URL`/`QDRANT_API_KEY`,
+`LABCTL_ALIENWARE_SSH` (ssh alias),
 `LABCTL_LAB_DIR`, `LABCTL_ALLOWED_COMMANDS`, and the `LABCTL_MCP_*` transport vars.
 
 ## Tests

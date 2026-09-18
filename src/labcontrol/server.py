@@ -63,13 +63,13 @@ _DANGER = ToolAnnotations(readOnlyHint=False, destructiveHint=True)
 
 @mcp.tool(annotations=_RO)
 def lab_status() -> dict:
-    """Health of every lab service: gateway (LAN + Tailscale), Ollama (M4 + GTX), Qdrant, Postgres exposure."""
+    """Health of every lab service: gateway (LAN + Tailscale), Ollama (GTX; M4 only if configured), Qdrant, Postgres exposure (null = not checkable from here)."""
     return ops.lab_status()
 
 
 @mcp.tool(annotations=_RO)
 def list_models() -> dict:
-    """List the Ollama models available on the Mac mini (m4) and the Alienware (gtx)."""
+    """List the Ollama models on the Alienware (gtx), plus the Mac mini (m4) if OLLAMA_M4 is set."""
     return ops.list_models()
 
 

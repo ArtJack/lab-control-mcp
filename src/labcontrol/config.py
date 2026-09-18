@@ -6,6 +6,7 @@ home lab (see README-MAC-MINI-ACCESS.md) and can be overridden via env.
 from __future__ import annotations
 
 import os
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -40,8 +41,14 @@ class Config:
         self.gateway_url_ts = os.getenv("LITELLM_BASE_URL_TS", "http://127.0.0.1:4000")
         self.master_key = os.getenv("LITELLM_MASTER_KEY") or None
 
-        self.ollama_m4 = os.getenv("OLLAMA_M4", "http://127.0.0.1:11434")
+        # The Mac mini's Ollama was retired 2026-09-18. With OLLAMA_M4 unset, every
+        # M4 check is skipped rather than reported as a dead endpoint.
+        self.ollama_m4 = os.getenv("OLLAMA_M4") or None
         self.ollama_gtx = os.getenv("OLLAMA_GTX", "http://127.0.0.1:11434")
+        # The address a LAN client uses to reach the lab box. The Postgres exposure
+        # probe goes here: probed over loopback from the box itself, Postgres always
+        # answers, so the check would report "exposed" when it is not.
+        self.lan_host = os.getenv("LABCTL_LAN_HOST") or urlparse(self.ollama_gtx).hostname
 
         self.qdrant_url = os.getenv("QDRANT_URL", "http://127.0.0.1:6333")
         self.qdrant_api_key = os.getenv("QDRANT_API_KEY") or None
